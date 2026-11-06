@@ -31,6 +31,10 @@ This project uses a Quectel Pi M2 and a ZL-IS2 controller to operate the Jibot1 
 | M2 power supply and arm battery | Required; use according to device specifications. The ZLink controller board is powered by the arm battery |
 | Browser client | Required; must be able to access the M2 web console over the network |
 
+**Servo ID setup**
+
+This demo expects unique IDs 000–005 for J1–J6, respectively. Some newly purchased arms may arrive with every bus servo set to the default ID 000. Before first use, assign the IDs individually according to the official instructions supplied with the ZL-IS2/ZLink hardware. This demo does not assign servo IDs automatically. Confirm that each ID is unique and matches its joint before starting the program.
+
 **Hardware connections**
 
 The following connections use the physical pin numbers on the M2 40-pin header:
@@ -48,6 +52,8 @@ Do not connect the arm battery supply to the M2 40-pin header. See [Wiring and P
 ## Quick Start
 
 Run these steps on Quectel Pi M2 Linux. Python 3.10 or later is required; run `python3 --version` to check.
+
+Before starting the program, confirm that the servo IDs are set to unique values 000–005 as described in Hardware Configuration.
 
 ```bash
 # 1. Install Git and Python virtual-environment support

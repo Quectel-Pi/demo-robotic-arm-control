@@ -1,5 +1,6 @@
 # Jibot1 六轴机械臂控制 Demo
 [English](README.md) | [简体中文](README_zh.md)
+
 [![QuectelPi](https://img.shields.io/badge/Platform-Quectel%20Pi-blue)](https://github.com/Quectel-Pi/)
 
 本项目使用 Quectel Pi M2 和 ZL-IS2，通过网页控制台操作众灵 Jibot1 六轴总线舵机机械臂。用户可以单独调节各关节、录制并播放动作组，演示预设位置的抓取与放置，并通过网页中的 3D 模型查看机械臂姿态。

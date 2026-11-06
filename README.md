@@ -1,5 +1,6 @@
 # Jibot1 Six-Axis Robotic Arm Control Demo
 [English](README.md) | [简体中文](README_zh.md)
+
 [![QuectelPi](https://img.shields.io/badge/Platform-Quectel%20Pi-blue)](https://github.com/Quectel-Pi/)
 
 This project uses a Quectel Pi M2 and a ZL-IS2 controller to operate the Jibot1 six-axis bus-servo arm through a browser-based console. It supports individual joint control, action recording and playback, fixed-position pick-and-place demonstrations, and a 3D view of the arm's pose.

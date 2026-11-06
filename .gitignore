@@ -1,0 +1,30 @@
+# Python environments, caches, and build outputs
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Machine-specific runtime state
+web_calibration.json
+recorded_action_groups.json
+logs/
+*.log
+
+# Local credentials
+.env
+.env.*
+!.env.example
+*.token
+
+# Local-only board deployment helper
+scripts/deploy_to_m2.ps1
+
+# Operating system files
+.DS_Store
+Thumbs.db

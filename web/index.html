@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#152131" />
+    <title>Jibot Arm Studio</title>
+      <link rel="stylesheet" href="./styles.css?v=folded-layout-2" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "./vendor/three.module.js"
+        }
+      }
+    </script>
+      <script type="module" src="./app.js?v=single-client-ip-1"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div>
+            <div class="brand-name">JIBOT <span>ARM STUDIO</span></div>
+            <div class="brand-caption">SIX AXIS CONTROL</div>
+          </div>
+        </div>
+
+        <div class="topbar-center">
+          <div class="connection-pill" id="connection-pill" data-state="offline">
+            <span class="connection-dot"></span>
+            <span id="connection-label">DISCONNECTED</span>
+          </div>
+          <span class="backend-label" id="backend-label">SERVO BUS · 115200 BAUD</span>
+        </div>
+
+        <div class="topbar-actions">
+          <button class="button button-quiet" id="language-toggle" type="button" title="Switch to Chinese" aria-label="Switch to Chinese">中</button>
+          <button class="button button-quiet" id="connect-button" type="button">Reconnect</button>
+          <button class="button button-stop" id="stop-button" type="button" disabled>
+            <span class="stop-icon" aria-hidden="true"></span> STOP
+          </button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="model-panel panel" aria-label="3D robot model">
+          <div class="panel-heading model-heading">
+            <div>
+              <div class="eyebrow" id="model-mode-label">MODEL REQUIRED</div>
+                <h1>Jibot1 <span class="heading-muted">/ STEP model unavailable</span></h1>
+            </div>
+            <div class="model-toolbar">
+                <span class="model-chip" id="model-source-chip"><span class="chip-dot"></span> MODEL REQUIRED</span>
+              <span class="model-chip reference-chip" id="baseline-chip">REFERENCE · LOADING</span>
+              <button class="button button-quiet manual-toggle" id="manual-toggle" type="button" aria-expanded="false" aria-controls="manual-panel">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16M8 4v6M16 14v6" /></svg>
+                Manual Control
+              </button>
+              <button class="icon-button" id="reset-camera" type="button" title="Reset camera view" aria-label="Reset camera view">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10a8 8 0 1 1 1.7 5.1M4 4v6h6" /></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="viewport-wrap" id="viewport-wrap">
+            <div class="viewport-grid"></div>
+            <div id="canvas-host" class="canvas-host"></div>
+            <section class="panel joints-panel joint-dock" id="manual-panel" role="dialog" aria-modal="false" aria-labelledby="joint-heading" hidden>
+              <div class="panel-heading compact-heading joints-heading">
+                <div>
+                  <div class="eyebrow">MANUAL CONTROL</div>
+                  <h2 id="joint-heading">Joint positions</h2>
+                </div>
+                <div class="joint-dock-actions">
+                  <span class="unit-tag">DEG · PWM µs</span>
+                  <button class="icon-button" id="manual-close" type="button" aria-label="Close manual controls" title="Close manual controls (Esc)">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+                  </button>
+                </div>
+              </div>
+              <p class="joint-dock-hint" id="manual-hint">Click a joint in the 3D model to open its control.</p>
+              <div class="joint-list" id="joint-list"></div>
+              <div class="joints-footer">
+                <span>Release the slider to move the selected joint.</span>
+                <button class="text-button" id="refresh-button" type="button">Refresh state</button>
+              </div>
+            </section>
+            <div class="model-loading" id="model-loading" role="status" aria-live="polite">
+              <div class="loader-ring"></div>
+              <div class="loading-title" id="model-loading-title">Loading Jibot1 STEP model</div>
+              <div class="loading-detail" id="model-loading-detail">Checking for web/models/jibot1.step…</div>
+            </div>
+            <div class="viewport-legend">
+              <span><i class="legend-axis axis-x"></i>X</span>
+              <span><i class="legend-axis axis-y"></i>Y</span>
+              <span><i class="legend-axis axis-z"></i>Z</span>
+              <span class="legend-hint">SELECT A JOINT · DRAG TO ORBIT · SCROLL TO ZOOM</span>
+            </div>
+            <div class="viewport-corner" aria-hidden="true">
+              <span>JIBOT1 STEP MODEL</span>
+              <span class="corner-line"></span>
+              <span>REFERENCE</span>
+            </div>
+          </div>
+
+          <div class="model-footer">
+            <div class="model-summary">
+              <span class="status-pulse"></span>
+              <span id="model-state">Loading Jibot1 STEP model</span>
+            </div>
+            <div class="selected-part" id="selected-part">Select a joint to control</div>
+          </div>
+          <div class="model-note" id="model-note">
+            Loading Jibot1 STEP model from web/models/jibot1.step.
+          </div>
+        </section>
+
+        <aside class="control-column">
+          <section class="panel status-panel">
+            <div class="panel-heading compact-heading">
+              <div>
+                <div class="eyebrow">CONTROLLER</div>
+                <h2>Device status</h2>
+              </div>
+              <span class="mode-tag" id="mode-tag">WAITING</span>
+            </div>
+            <div class="status-grid">
+              <div class="status-cell">
+                <span class="status-label">ONLINE AXES</span>
+                <strong id="online-count">— / 6</strong>
+              </div>
+              <div class="status-cell">
+                <span class="status-label">MOTION</span>
+                <strong id="motion-state">IDLE</strong>
+              </div>
+              <div class="status-cell status-cell-wide">
+                <span class="status-label">LAST UPDATE</span>
+                <strong id="last-update">Waiting for controller</strong>
+              </div>
+            </div>
+          </section>
+
+          <details class="panel axis-check-panel" id="calibration-panel">
+            <summary class="calibration-toggle" id="calibration-toggle" aria-label="Calibration">
+              <svg class="calibration-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16M8 4v6M16 14v6" /></svg>
+              <span>Calibration</span>
+              <svg class="disclosure-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4 4 4-4" /></svg>
+            </summary>
+            <div class="calibration-body">
+            <div class="panel-heading compact-heading">
+              <h2 id="axis-check-heading">Axis check</h2>
+              <span class="unit-tag" id="axis-check-count">0 / 6 CHECKED</span>
+            </div>
+            <p class="axis-reference" id="axis-reference">Loading saved reference…</p>
+            <div class="axis-check-fields">
+              <label for="check-joint">Joint
+                <select id="check-joint">
+                  <option value="0">J1 · ID 000</option><option value="1">J2 · ID 001</option>
+                  <option value="2">J3 · ID 002</option><option value="3">J4 · ID 003</option>
+                  <option value="4">J5 · ID 004</option><option value="5">J6 · ID 005</option>
+                </select>
+              </label>
+              <label for="check-step">Angle
+                <select id="check-step"><option value="5">5°</option><option value="10">10°</option></select>
+              </label>
+            </div>
+            <div class="axis-check-readout" id="check-readout">Reference — · Readback —</div>
+            <div class="axis-check-moves">
+              <button class="button button-quiet" id="check-minus" type="button" disabled>−5°</button>
+              <button class="button button-quiet" id="check-zero" type="button" disabled>Return to 0°</button>
+              <button class="button button-quiet" id="check-plus" type="button" disabled>+5°</button>
+            </div>
+            <div class="axis-check-directions" aria-label="Saved direction checks" aria-live="polite">
+              <span class="axis-direction-badge" id="check-positive" data-state="pending">+ Pending</span>
+              <span class="axis-direction-badge" id="check-negative" data-state="pending">− Pending</span>
+            </div>
+            <p class="axis-check-status" id="check-status" role="status" aria-live="polite">Compare each real joint's movement direction with the 3D model.</p>
+            <div class="axis-check-results">
+              <button class="button button-primary" id="check-match" type="button" disabled>Matches 3D</button>
+              <button class="button button-quiet" id="check-mismatch" type="button" disabled>Needs adjustment</button>
+            </div>
+            </div>
+          </details>
+
+        <section class="panel action-panel motion-library-panel" aria-labelledby="action-heading">
+          <div class="panel-heading compact-heading action-heading">
+            <div>
+              <div class="eyebrow">MOTION LIBRARY</div>
+              <h2 id="action-heading">Action groups</h2>
+            </div>
+            <span class="unit-tag" id="action-count">0 SAVED</span>
+          </div>
+
+          <section class="recorded-library-section" aria-labelledby="recorded-actions-heading">
+            <div class="library-section-heading">
+              <h3 id="recorded-actions-heading">Recorded action groups</h3>
+              <span class="unit-tag" id="catalog-action-count">Loading groups…</span>
+            </div>
+            <div class="action-create-row">
+              <label class="sr-only" for="action-name">Action group name</label>
+              <input id="action-name" class="action-name-input" type="text" maxlength="60" placeholder="Name this sequence" autocomplete="off" />
+              <button class="button button-primary" id="record-start" type="button" disabled>Record</button>
+            </div>
+            <p class="action-hint" id="action-hint">Connect all six joints, then record poses from the current arm position.</p>
+            <div class="recording-panel" id="recording-panel" hidden>
+              <div class="recording-status-row">
+                <span class="recording-indicator"></span>
+                <strong id="recording-status">RECORDING · 0 POSES</strong>
+                <span>Move joints, then capture each pose.</span>
+              </div>
+              <div class="recording-controls">
+                <label for="pose-duration">Move time</label>
+                <select id="pose-duration">
+                  <option value="1000">1.0 s</option>
+                  <option value="1500">1.5 s</option>
+                  <option value="2000">2.0 s</option>
+                  <option value="3000">3.0 s</option>
+                  <option value="5000">5.0 s</option>
+                </select>
+                <button class="button button-quiet" id="capture-pose" type="button">Capture pose</button>
+              </div>
+              <ol class="recorded-pose-list" id="recorded-pose-list"></ol>
+              <div class="recording-footer">
+                <button class="text-button" id="record-cancel" type="button">Discard</button>
+                <button class="button button-primary" id="record-save" type="button" disabled>Save group</button>
+              </div>
+            </div>
+            <div class="action-group-list" id="action-group-list" aria-live="polite">
+              <div class="action-empty">Loading saved action groups…</div>
+            </div>
+
+            <div class="catalog-toolbar">
+              <label class="catalog-field" for="catalog-start-group">
+                <span>Start group</span>
+                <select id="catalog-start-group" disabled></select>
+              </label>
+              <label class="catalog-field" for="catalog-end-group">
+                <span>End group</span>
+                <select id="catalog-end-group" disabled></select>
+              </label>
+              <label class="catalog-field catalog-repeat-field" for="catalog-repeat-count">
+                <span>Repeat</span>
+                <input id="catalog-repeat-count" type="number" min="1" max="20" value="1" disabled />
+              </label>
+              <label class="catalog-field" for="catalog-playback-target">
+                <span>Playback target</span>
+                <select id="catalog-playback-target" disabled>
+                  <option value="range">Selected range</option>
+                  <option value="sequence">Demo sequence</option>
+                </select>
+              </label>
+              <div class="catalog-mode-field" role="group" aria-labelledby="catalog-run-mode-heading" aria-describedby="catalog-online-note">
+                <span class="catalog-mode-caption" id="catalog-run-mode-heading">Run mode</span>
+                <span class="catalog-mode-value" id="catalog-run-mode" role="status" aria-live="polite">AUTO · OFFLINE PREVIEW</span>
+              </div>
+              <button class="button button-primary catalog-run-button" id="catalog-run" type="button" aria-describedby="catalog-online-note catalog-sequence-repeat-note" disabled>▶ Preview selected range</button>
+            </div>
+            <p class="action-hint" id="catalog-online-note" role="note">Offline preview animates only the 3D model and sends no hardware commands. Online run is selected when all six servos are detected.</p>
+            <details class="catalog-demo-sequence" aria-labelledby="catalog-demo-sequence-heading" open>
+              <summary class="catalog-demo-sequence-heading">
+                <div>
+                  <h3 id="catalog-demo-sequence-heading">Demo sequence</h3>
+                  <p>Ranges run in order. The sequence is saved in this browser.</p>
+                </div>
+                <span class="unit-tag" id="catalog-sequence-count">0 STEPS</span>
+                <span class="catalog-sequence-chevron" aria-hidden="true">⌄</span>
+              </summary>
+              <div class="catalog-demo-sequence-body">
+                <ol class="catalog-demo-sequence-list" id="catalog-sequence-list" aria-label="Demo sequence ranges" aria-live="polite">
+                  <li class="catalog-demo-sequence-empty">Loading demo sequence…</li>
+                </ol>
+                <div class="catalog-demo-sequence-actions">
+                  <button class="button button-quiet" id="catalog-sequence-add" type="button" disabled>Add selected range</button>
+                  <button class="button button-quiet" id="catalog-sequence-clear" type="button" disabled>Clear</button>
+                </div>
+                <p class="action-hint" id="catalog-sequence-repeat-note">Repeat applies to the selected playback target.</p>
+              </div>
+            </details>
+
+            <details class="catalog-data-disclosure">
+              <summary>
+                <span>Servo values and timing</span>
+                <span class="disclosure-meta">PWM / ms · 6 AXES</span>
+              </summary>
+              <div class="catalog-table-wrap" role="region" aria-label="Recorded action group PWM and timing table" tabindex="0">
+                <table class="catalog-table">
+                  <thead>
+                    <tr>
+                      <th rowspan="2" scope="col">Group</th>
+                      <th rowspan="2" scope="col">Action</th>
+                      <th rowspan="2" scope="col">Review</th>
+                      <th colspan="2" scope="colgroup">Servo ID 000</th>
+                      <th colspan="2" scope="colgroup">Servo ID 001</th>
+                      <th colspan="2" scope="colgroup">Servo ID 002</th>
+                      <th colspan="2" scope="colgroup">Servo ID 003</th>
+                      <th colspan="2" scope="colgroup">Servo ID 004</th>
+                      <th colspan="2" scope="colgroup">Servo ID 005</th>
+                    </tr>
+                    <tr>
+                      <th scope="col">PWM</th><th scope="col">TIME</th>
+                      <th scope="col">PWM</th><th scope="col">TIME</th>
+                      <th scope="col">PWM</th><th scope="col">TIME</th>
+                      <th scope="col">PWM</th><th scope="col">TIME</th>
+                      <th scope="col">PWM</th><th scope="col">TIME</th>
+                      <th scope="col">PWM</th><th scope="col">TIME</th>
+                    </tr>
+                  </thead>
+                  <tbody id="catalog-action-rows">
+                    <tr><td colspan="15" class="catalog-empty">Loading recorded action groups…</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="catalog-footer">
+                <span id="catalog-run-status">Select a row or set a group range to preview.</span>
+                <div>
+                  <button class="button button-quiet" id="catalog-refresh" type="button">Refresh library</button>
+                </div>
+              </div>
+            </details>
+          </section>
+        </section>
+        </aside>
+      </main>
+
+      <footer class="app-footer">
+        <span>JIBOT1 · DEVELOPMENT CONSOLE</span>
+        <span id="footer-message">Connect to the M2 controller to enable manual commands.</span>
+        <span>WEBGL <i class="footer-dot"></i> SERIAL VIA M2</span>
+      </footer>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

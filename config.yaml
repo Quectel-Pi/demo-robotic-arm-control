@@ -1,0 +1,102 @@
+web:
+  allowed_client_ip: ""
+serial:
+  backend: zl_is2
+  port: /dev/ttyS1
+  baudrate: 115200
+  timeout_sec: 0.05
+  read_timeout_sec: 0.6
+safety:
+  vin_low_mv: 7000
+  vin_stop_mv: 6800
+  max_parallel_axes: 3
+  min_duration_ms: 800
+  heavy_axis_ids:
+  - 1
+  - 2
+  heavy_axis_min_duration_ms: 1200
+joints:
+# J1 measured: a 500 us PWM change turns the base 90 degrees.
+# J2-J6 retain the 270-degree MOD1 scale; scales are positions per degree.
+- name: j1
+  id: 0
+  center_deg: 0.0
+  center_pos: 500
+  min_deg: -136.8
+  max_deg: 136.8
+  position_scale: 2.7777777777777777
+  min_pos: 120
+  max_pos: 880
+  direction: 1
+- name: j2
+  id: 1
+  center_deg: 0.0
+  center_pos: 500
+  min_deg: -97.2
+  max_deg: 97.2
+  position_scale: 3.7037037037037037
+  min_pos: 140
+  max_pos: 860
+  direction: -1
+- name: j3
+  id: 2
+  center_deg: 0.0
+  center_pos: 500
+  min_deg: -102.6
+  max_deg: 102.6
+  position_scale: 3.7037037037037037
+  min_pos: 120
+  max_pos: 880
+  direction: 1
+- name: j4
+  id: 3
+  center_deg: 0.0
+  center_pos: 500
+  min_deg: -105.3
+  max_deg: 105.3
+  position_scale: 3.7037037037037037
+  min_pos: 110
+  max_pos: 890
+  direction: 1
+- name: j5
+  id: 4
+  center_deg: 0.0
+  center_pos: 500
+  min_deg: -99.9
+  max_deg: 99.9
+  position_scale: 3.7037037037037037
+  min_pos: 130
+  max_pos: 870
+  direction: -1
+- name: j6
+  id: 5
+  center_deg: 0.0
+  center_pos: 500
+  min_deg: -91.8
+  max_deg: 91.8
+  position_scale: 3.7037037037037037
+  min_pos: 160
+  max_pos: 840
+  direction: 1
+poses:
+  home:
+    j1: 0
+    j2: -15
+    j3: 30
+    j4: 0
+    j5: 20
+    j6: 0
+  pick:
+    j1: 20
+    j2: -35
+    j3: 55
+    j4: 0
+    j5: 40
+    j6: 15
+  place:
+    j1: -25
+    j2: -25
+    j3: 45
+    j4: 0
+    j5: 30
+    j6: -10

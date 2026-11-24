@@ -124,6 +124,49 @@ The 3D view redraws only when the model, pose, or camera changes. Model animatio
 
 ---
 
+## Physical Baseline (web_calibration.json)
+
+The web console uses `web_calibration.json` in the project root to record the position of all six servos at the physical zero pose and treats it as the 0° reference for every angle. The file is machine-specific runtime state and is not part of the project source. After a first deployment, an arm replacement, or re-seating a servo horn, the console starts on the nominal reference: all six joints treat PWM 1500 μs as 0°, the baseline label shows `ZERO · NOMINAL REFERENCE`, and the per-axis checks in the Calibration panel are disabled.
+
+When only the M2 board changes and the arm stays the same, copy `web_calibration.json` from the old board's project directory to the new one and restart the web service.
+
+After replacing the arm or re-installing a servo horn, recalibrate as follows.
+
+**1. Move to the physical zero pose**
+
+Start the web console and use the manual control panel to move J1–J6, one at a time, to the mechanical zero pose (for example, the base facing straight forward and the upper arm vertical).
+
+**2. Read the servo positions**
+
+Keep the arm still and run:
+
+```bash
+curl -s http://127.0.0.1:8080/api/state
+```
+
+Record the `position` value of each servo (an integer from 0 to 1000).
+
+**3. Create the baseline file**
+
+Create `web_calibration.json` in the project root, replace `positions` with the values from the previous step, and set `saved_at` to the current UTC time:
+
+```json
+{
+  "version": 1,
+  "backend": "zl_is2",
+  "saved_at": "2026-11-24T10:00:00Z",
+  "positions": {"0": 500, "1": 500, "2": 500, "3": 500, "4": 500, "5": 500}
+}
+```
+
+**4. Restart and confirm**
+
+Restart the web service and reload the page. The baseline is active when the label shows `ZERO · SAVED BASELINE`; all angles are then relative to it, and the per-axis checks are available when the controller is connected and all six servos are online. Restarting sends no motion commands; the arm stays in place.
+
+`positions` must contain all six servo IDs 0–5 as integers within `min_pos`–`max_pos` from `config.yaml`; the gripper (ID 5) must not exceed 600 (PWM 1700 μs). If the file is missing, the console uses the nominal reference; if its format or values are invalid, the service fails to start. The baseline is read only at startup, so restart the service after editing the file. Angles, manual control, and action-group playback are all relative to this baseline.
+
+---
+
 ## Project Structure
 
 ```text
@@ -136,6 +179,8 @@ demo-robotic-arm-control/
 │   └── 01-接线与上电方案.md        # wiring and controller notes
 ├── LICENSE.txt                     # project Apache-2.0 license
 ├── config.yaml                      # serial, safety, and browser IP configuration
+├── web_calibration.json             # physical baseline (board-specific; not shipped with the source)
+├── recorded_action_groups.json      # action groups recorded from the browser (created at runtime)
 ├── pyproject.toml                  # Python project metadata
 ├── requirements.txt                # Python runtime dependencies
 ├── scripts/
@@ -169,6 +214,10 @@ The STEP model is rendered by the browser on the accessing device using its loca
 ### Does offline preview move the physical arm?
 
 No. Offline preview animates only the 3D model in the browser and sends no servo motion commands. To move the physical arm, make sure the controller is connected and all six servos are online, then use online control or play an action group.
+
+### The baseline label shows “Nominal Reference” and joint angles do not match the real pose. What should I do?
+
+The console could not read `web_calibration.json` and is running on the nominal reference: 0° corresponds to PWM 1500 μs, so joints may be off by more than ten degrees, and the per-axis checks in the Calibration panel are disabled. Restore or recreate the file as described in “Physical Baseline” and restart the web service; the baseline is read only at startup.
 
 ---
 

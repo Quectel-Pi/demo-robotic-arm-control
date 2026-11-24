@@ -126,11 +126,13 @@ The 3D view redraws only when the model, pose, or camera changes. Model animatio
 
 ## Physical Baseline (web_calibration.json)
 
-The web console uses `web_calibration.json` in the project root to record the position of all six servos at the physical zero pose and treats it as the 0° reference for every angle. The file is machine-specific runtime state and is not part of the project source. After a first deployment, an arm replacement, or re-seating a servo horn, the console starts on the nominal reference: all six joints treat PWM 1500 μs as 0°, the baseline label shows `ZERO · NOMINAL REFERENCE`, and the per-axis checks in the Calibration panel are disabled.
+The repository ships a reference `web_calibration.json` that was confirmed on the development arm, recording each servo's position at the physical zero pose (J1–J6: 459, 501, 504, 500, 498, 498). The web console uses it as the 0° reference for every angle. After replacing the arm or re-seating a servo horn, edit the `positions` in this file instead of creating a new one.
 
-When only the M2 board changes and the arm stays the same, copy `web_calibration.json` from the old board's project directory to the new one and restart the web service.
+This baseline is valid only for that arm assembly. Applying it to an arm with a different zero shifts the joints: J1 at 459 differs from the nominal 500 by about 14.4°. Before the first motion, compare the `position` readback at your physical zero pose with the file and update any mismatching value.
 
-After replacing the arm or re-installing a servo horn, recalibrate as follows.
+When only the M2 board changes and the arm stays the same, keep the shipped file; if the old board's file was already adjusted, copy it to the new board's project directory and restart the web service.
+
+After replacing the arm or re-installing a servo horn, update the baseline as follows.
 
 **1. Move to the physical zero pose**
 
@@ -146,16 +148,16 @@ curl -s http://127.0.0.1:8080/api/state
 
 Record the `position` value of each servo (an integer from 0 to 1000).
 
-**3. Create the baseline file**
+**3. Edit the baseline file**
 
-Create `web_calibration.json` in the project root, replace `positions` with the values from the previous step, and set `saved_at` to the current UTC time:
+Replace `positions` in `web_calibration.json` in the project root with the values from the previous step, and set `saved_at` to the current UTC time:
 
 ```json
 {
   "version": 1,
   "backend": "zl_is2",
   "saved_at": "2026-11-24T10:00:00Z",
-  "positions": {"0": 500, "1": 500, "2": 500, "3": 500, "4": 500, "5": 500}
+  "positions": {"0": 459, "1": 501, "2": 504, "3": 500, "4": 498, "5": 498}
 }
 ```
 
@@ -179,7 +181,7 @@ demo-robotic-arm-control/
 │   └── 01-接线与上电方案.md        # wiring and controller notes
 ├── LICENSE.txt                     # project Apache-2.0 license
 ├── config.yaml                      # serial, safety, and browser IP configuration
-├── web_calibration.json             # physical baseline (board-specific; not shipped with the source)
+├── web_calibration.json             # physical baseline (shipped; edit positions per arm)
 ├── recorded_action_groups.json      # action groups recorded from the browser (created at runtime)
 ├── pyproject.toml                  # Python project metadata
 ├── requirements.txt                # Python runtime dependencies
@@ -217,7 +219,7 @@ No. Offline preview animates only the 3D model in the browser and sends no servo
 
 ### The baseline label shows “Nominal Reference” and joint angles do not match the real pose. What should I do?
 
-The console could not read `web_calibration.json` and is running on the nominal reference: 0° corresponds to PWM 1500 μs, so joints may be off by more than ten degrees, and the per-axis checks in the Calibration panel are disabled. Restore or recreate the file as described in “Physical Baseline” and restart the web service; the baseline is read only at startup.
+When `web_calibration.json` is missing from the project root (deleted or failed validation), the console runs on the nominal reference: 0° corresponds to PWM 1500 μs, so joints may be off by more than ten degrees, and the per-axis checks in the Calibration panel are disabled. Restore or recreate the file as described in “Physical Baseline” and restart the web service; the baseline is read only at startup.
 
 ---
 

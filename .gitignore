@@ -14,7 +14,6 @@ dist/
 !web/vendor/occt/dist/
 
 # Machine-specific runtime state
-web_calibration.json
 recorded_action_groups.json
 logs/
 *.log
